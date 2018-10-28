@@ -40,7 +40,7 @@ function draw() {
   endShape();
 
   if (controlPoints.length >= pointsNum) {
-    var bspline =  new BSpline(controlPoints, degree, knots2);
+    var bspline =  new BSpline(controlPoints, degree, knots1);
     var points = bspline.getBSplineCurve();
     beginShape();
     for (var i = 0; i < points.length; i++) {
