@@ -1,72 +1,52 @@
-var gui_curveDegree = 3;
-var gui_controlPointsNum = 6;
-var gui_knotsVector = ['clamped', 'unclamped'];
-var gui_showPolygon = true;
-var gui_strokeColor = '#46b9b0';
-var gui_strokeWidth = 3;
-var gui;
+var settingPannel;
+var curveDegree = 3;
+var controlPointsNum = 6;
+var knotsVector = "clamped";
+var showPolygon = true;
+var splineColor = "#fd4102";
+var splineStrokeWeight = 3;
 
 var controlPoints = [];
 var ifFinishGenPoints = false;
-var bspline;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-
-  gui = createGui("Let's draw bspline");
-  sliderRange(1, 5, 1);
-  gui.addGlobals('gui_curveDegree');
-
-  sliderRange(6, 12, 1);
-  gui.addGlobals('gui_controlPointsNum');
-
-  gui.addGlobals('gui_knotsVector', 'gui_showPolygon', 'gui_strokeColor');
-
-  sliderRange(1, 5, 1);
-  gui.addGlobals('gui_strokeWidth');
+  settingPannel = QuickSettings.create(10, 10, "Let's draw bspline!")
+                  .addRange("Degree of Curve", 1, 5, curveDegree, 1, function(value) {
+                    curveDegree = value})
+                  .addRange("Control Points Num", 6, 15, controlPointsNum, 1, function(value) {
+                    controlPointsNum = value})
+                  .addDropDown("Knots Vector",["clamped", "unclamped"], function(value) {
+                    knotsVector = value.value})
+                  .addBoolean("Show Control Polygon", true, function(value) {
+                    showPolygon = value})
+                  .addColor("Stroke Color", splineColor, function(value){
+                    splineColor = value
+                  })
+                  .addRange("Stroke Weight", 1, 5, splineStrokeWeight, 1, function(value){
+                    splineStrokeWeight = value
+                  })
 }
 
 function draw() {
   background(255);
   
-  if (gui_showPolygon) drawPolygon();
+  if (showPolygon) drawPolygon();
 
   if (ifFinishGenPoints) {
     var knots;
-    switch(gui_knotsVector) {
+    switch(knotsVector) {
       case 'clamped': 
-        knots = generateClampedKnots(gui_controlPointsNum, gui_curveDegree);
+        knots = generateClampedKnots(controlPointsNum, curveDegree);
         break;
       case 'unclamped':
-        knots = generateUnclampedKnots(gui_controlPointsNum, gui_curveDegree);
+        knots = generateUnclampedKnots(controlPointsNum, curveDegree);
         break;
     }
-    var bspline =  new BSpline(controlPoints, gui_curveDegree, knots);
+    var bspline =  new BSpline(controlPoints, curveDegree, knots);
     var points = bspline.getBSplineCurve();
     drawPolyLine(points);
   }
-}
-
-function generateUnclampedKnots(pointsNum, degree) {
-  var knots = [];
-  for(var i = 0; i < pointsNum+degree+1; i++) {
-    knots[i] = i*0.1;
-  }
-  return knots;
-}
-
-function generateClampedKnots(pointsNum, degree) {
-  var knots = [];
-  var delta = 1.0 / (pointsNum+degree);
-  for(var i = 0; i < pointsNum+degree+1; i++) {
-    if (i < degree+1)
-      knots[i] = 0.0;
-    else if (i < pointsNum)
-      knots[i] = knots[i-1] + delta;
-    else
-      knots[i] = 1;
-  }
-  return knots;
 }
 
 function drawPolygon() {
@@ -76,11 +56,11 @@ function drawPolygon() {
     var p = controlPoints[i];
     push();
     if (checkIfDragged(p)) {
-      fill(color(255, 0, 0));
-      ellipse(p.x, p.y, 15, 15);
+      fill(120, 120, 120);
+      ellipse(p.x, p.y, 25, 25);
     } else {
-      // fill(p.c);
-      ellipse(p.x, p.y, 20, 20);
+      fill(60, 60, 60);
+      ellipse(p.x, p.y, 15, 15);
     }
     pop();
     vertex(p.x, p.y);
@@ -89,18 +69,23 @@ function drawPolygon() {
 }
 
 function drawPolyLine(points) {
+  push();
   beginShape();
+  stroke(splineColor);
+  strokeWeight(splineStrokeWeight);
     for (var i = 0; i < points.length; i++) {
       vertex(points[i].x, points[i].y);
     }
   endShape();
+  pop();
 }
 
 function doubleClicked() {
-  if (controlPoints.length < gui_controlPointsNum) {
+  if (controlPoints.length < controlPointsNum) {
     controlPoints.push(createVector(mouseX, mouseY));
-    if(controlPoints.length == gui_controlPointsNum) {
+    if(controlPoints.length == controlPointsNum) {
       ifFinishGenPoints = true;
+      settingPannel.disableControl("Control Points Num");
     }
   }
 }
