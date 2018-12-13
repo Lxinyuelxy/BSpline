@@ -11,7 +11,7 @@ var ifFinishGenPoints = false;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  settingPannel = QuickSettings.create(10, 10, "Let's draw bspline!")
+  settingPannel = QuickSettings.create(10, 10, "Double click to generate a control point")
                   .addRange("Degree of Curve", 1, 5, curveDegree, 1, function(value) {
                     curveDegree = value})
                   .addRange("Control Points Num", 6, 15, controlPointsNum, 1, function(value) {
