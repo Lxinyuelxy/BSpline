@@ -1,7 +1,7 @@
 var settingPannel;
 var curveDegree = 3;
 var controlPointsNum = 6;
-var knotsVector = "clamped";
+var knotsVector = "clamped, uniform";
 var showPolygon = true;
 var splineColor = "#fd4102";
 var splineStrokeWeight = 3;
@@ -10,13 +10,20 @@ var controlPoints = [];
 var ifFinishGenPoints = false;
 
 function setup() {
+  for (var i = 0; i < 25; i++) {
+    var num = Math.random();
+    while(num == 0) num = Math.random();
+    randomNumber[i] = num;
+  }
+  randomNumber.sort();
+
   createCanvas(windowWidth, windowHeight);
   settingPannel = QuickSettings.create(10, 10, "Double click to generate a control point")
                   .addRange("Degree of Curve", 1, 5, curveDegree, 1, function(value) {
                     curveDegree = value})
                   .addRange("Control Points Num", 6, 15, controlPointsNum, 1, function(value) {
                     controlPointsNum = value})
-                  .addDropDown("Knots Vector",["clamped", "unclamped"], function(value) {
+                  .addDropDown("Knots Vector",["clamped, uniform", "clamped, nonuniform", "unclamped, uniform", "unclamped, nonuniform"], function(value) {
                     knotsVector = value.value})
                   .addBoolean("Show Control Polygon", true, function(value) {
                     showPolygon = value})
@@ -36,11 +43,17 @@ function draw() {
   if (ifFinishGenPoints) {
     var knots;
     switch(knotsVector) {
-      case 'clamped': 
-        knots = generateClampedKnots(controlPointsNum, curveDegree);
+      case 'clamped, uniform': 
+        knots = clampedUniformKnots(controlPointsNum, curveDegree);
         break;
-      case 'unclamped':
-        knots = generateUnclampedKnots(controlPointsNum, curveDegree);
+      case 'clamped, nonuniform':
+        knots = clampedNonuniformKnots(controlPointsNum, curveDegree);
+        break;
+      case 'unclamped, uniform':
+        knots = unclampedUniformKnots(controlPointsNum, curveDegree);
+        break;
+      case 'unclamped, nonuniform':
+        knots = unclampedNonuniformKnots(controlPointsNum, curveDegree);
         break;
     }
     var bspline =  new BSpline(controlPoints, curveDegree, knots);
@@ -86,6 +99,16 @@ function doubleClicked() {
     if(controlPoints.length == controlPointsNum) {
       ifFinishGenPoints = true;
       settingPannel.disableControl("Control Points Num");
+
+      // knots = clampedUniformKnots(controlPointsNum, curveDegree);
+      // console.log("clamped, uniform", knots);
+      // knots = clampedNonuniformKnots(controlPointsNum, curveDegree);
+      // console.log("clamped, nonuniform", knots);
+      // knots = unclampedUniformKnots(controlPointsNum, curveDegree);
+      // console.log("unclamped, uniform", knots);
+      // knots = unclampedNonuniformKnots(controlPointsNum, curveDegree);
+      // console.log("unclamped, nonuniform", knots);
+
     }
   }
 }
