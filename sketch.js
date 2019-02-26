@@ -1,5 +1,6 @@
 var settingPannel;
 var curveDegree = 3;
+var changeOfDegree = 0;
 var controlPointsNum = 6;
 var knotsVector = "clamped, uniform";
 var showPolygon = true;
@@ -18,21 +19,23 @@ function setup() {
   randomNumber.sort();
 
   createCanvas(windowWidth, windowHeight);
-  settingPannel = QuickSettings.create(10, 10, "Double click to generate a control point")
-                  .addRange("Degree of Curve", 1, 5, curveDegree, 1, function(value) {
-                    curveDegree = value})
-                  .addRange("Control Points Num", 6, 15, controlPointsNum, 1, function(value) {
-                    controlPointsNum = value})
-                  .addDropDown("Knots Vector",["clamped, uniform", "clamped, nonuniform", "unclamped, uniform", "unclamped, nonuniform"], function(value) {
-                    knotsVector = value.value})
-                  .addBoolean("Show Control Polygon", true, function(value) {
-                    showPolygon = value})
-                  .addColor("Stroke Color", splineColor, function(value){
-                    splineColor = value
-                  })
-                  .addRange("Stroke Weight", 1, 5, splineStrokeWeight, 1, function(value){
-                    splineStrokeWeight = value
-                  })
+  settingPannel = QuickSettings.create(10, 10, "Double click to generate a control point");
+  settingPannel.addRange("Degree of Curve", 1, 5, curveDegree, 1, function(value) {
+    changeOfDegree = value - curveDegree; 
+    curveDegree = value});
+  settingPannel.addRange("Control Points Num", 6, 15, controlPointsNum, 1, function(value) {controlPointsNum = value})
+  settingPannel.addDropDown("Knots Vector",["clamped, uniform", "clamped, nonuniform", "unclamped, uniform", "unclamped, nonuniform", "customize"], function(value) {
+    knotsVector = value.value});
+  
+  for(var i = 0; i < 25; i++) {
+    settingPannel.addNumber('knot '+str(i), 1, 25, i*0.1, 0.1);
+    settingPannel.hideTitle('knot '+str(i));
+    settingPannel.hideControl('knot '+str(i));
+  }
+    
+  settingPannel.addBoolean("Show Control Polygon", true, function(value) {showPolygon = value});
+  settingPannel.addColor("Stroke Color", splineColor, function(value){splineColor = value});
+  settingPannel.addRange("Stroke Weight", 1, 5, splineStrokeWeight, 1, function(value){splineStrokeWeight = value});
 }
 
 function draw() {
@@ -45,15 +48,34 @@ function draw() {
     switch(knotsVector) {
       case 'clamped, uniform': 
         knots = clampedUniformKnots(controlPointsNum, curveDegree);
+        hideKnotsInputSettings();
         break;
       case 'clamped, nonuniform':
         knots = clampedNonuniformKnots(controlPointsNum, curveDegree);
+        hideKnotsInputSettings();
         break;
       case 'unclamped, uniform':
         knots = unclampedUniformKnots(controlPointsNum, curveDegree);
+        hideKnotsInputSettings();
         break;
       case 'unclamped, nonuniform':
         knots = unclampedNonuniformKnots(controlPointsNum, curveDegree);
+        hideKnotsInputSettings();
+        break;
+      case 'customize':
+        knots = []
+        for(var i = 0; i < controlPointsNum+curveDegree+1; i++) {
+          settingPannel.showControl('knot '+str(i));
+          knots[i] = settingPannel.getValue('knot '+str(i));
+        }
+        if(changeOfDegree < 0) {
+          for(var i = controlPointsNum+curveDegree-changeOfDegree; i > controlPointsNum+curveDegree; i--) {
+            settingPannel.hideControl('knot '+str(i));
+            knots.pop();
+          }
+          changeOfDegree = 0;
+        }
+        knots.sort();
         break;
     }
     var bspline =  new BSpline(controlPoints, curveDegree, knots);
@@ -91,6 +113,11 @@ function drawPolyLine(points) {
     }
   endShape();
   pop();
+}
+
+function hideKnotsInputSettings() {
+  for(var i = 0; i < controlPointsNum+curveDegree+1; i++) 
+    settingPannel.hideControl('knot '+str(i));
 }
 
 function doubleClicked() {
