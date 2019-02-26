@@ -13,7 +13,7 @@ var ifFinishGenPoints = false;
 function setup() {
   for (var i = 0; i < 25; i++) {
     var num = Math.random();
-    while(num == 0) num = Math.random();
+    while(num == 0) num = Math.random()*10;
     randomNumber[i] = num;
   }
   randomNumber.sort();
@@ -28,7 +28,7 @@ function setup() {
     knotsVector = value.value});
   
   for(var i = 0; i < 25; i++) {
-    settingPannel.addNumber('knot '+str(i), 1, 25, i*0.1, 0.1);
+    settingPannel.addNumber('knot '+str(i), 0, 25, i*0.1, 0.1);
     settingPannel.hideTitle('knot '+str(i));
     settingPannel.hideControl('knot '+str(i));
   }
